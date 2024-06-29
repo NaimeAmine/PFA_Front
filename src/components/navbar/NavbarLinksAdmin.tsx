@@ -52,35 +52,35 @@ export default function HeaderLinks(props: { secondary: boolean }) {
   const borderButton = useColorModeValue("secondaryGray.500", "whiteAlpha.200");
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [notifications, setNotifications] = useState<string[]>([]);
-  useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        const clientId = localStorage.getItem("clientId");
-        if (!clientId) throw new Error("Identifiant client non trouvé");
+  // useEffect(() => {
+  //   const fetchReservations = async () => {
+  //     try {
+  //       const clientId = localStorage.getItem("clientId");
+  //       if (!clientId) throw new Error("Identifiant client non trouvé");
 
-        const response = await fetch(
-          `http://localhost:8080/api/client/my-bookings/${clientId}`
-        );
-        if (!response.ok)
-          throw new Error("Échec de la récupération des réservations");
+  //       const response = await fetch(
+  //         `http://localhost:8080/api/client/my-bookings/${clientId}`
+  //       );
+  //       if (!response.ok)
+  //         throw new Error("Échec de la récupération des réservations");
 
-        const newData: Reservation[] = await response.json();
-        const storedData = localStorage.getItem("reservations");
-        const oldData: Reservation[] = storedData ? JSON.parse(storedData) : [];
+  //       const newData: Reservation[] = await response.json();
+  //       const storedData = localStorage.getItem("reservations");
+  //       const oldData: Reservation[] = storedData ? JSON.parse(storedData) : [];
 
-        checkForChanges(newData, oldData);
-        setReservations(newData);
-        localStorage.setItem("reservations", JSON.stringify(newData));
-      } catch (error) {
-        console.error("Erreur:", error);
-      }
-    };
+  //       checkForChanges(newData, oldData);
+  //       setReservations(newData);
+  //       localStorage.setItem("reservations", JSON.stringify(newData));
+  //     } catch (error) {
+  //       console.error("Erreur:", error);
+  //     }
+  //   };
 
-    const intervalId = setInterval(fetchReservations, 3000); 
-    fetchReservations();
+  //   const intervalId = setInterval(fetchReservations, 3000);
+  //   // fetchReservations();
 
-    return () => clearInterval(intervalId);
-  }, []);
+  //   return () => clearInterval(intervalId);
+  // }, []);
 
   const checkForChanges = (newData: Reservation[], oldData: Reservation[]) => {
     const newNotifications: string[] = [];
@@ -150,7 +150,7 @@ export default function HeaderLinks(props: { secondary: boolean }) {
             <Text fontSize="md" fontWeight="600" color={textColor}>
               Notifications
             </Text>
-  
+
           </Flex>
           <Flex flexDirection="column">
             {notifications.map((notification, index) => (
@@ -169,7 +169,7 @@ export default function HeaderLinks(props: { secondary: boolean }) {
         </MenuList>
       </Menu>
 
-     
+
       <Button
         variant="no-hover"
         bg="transparent"

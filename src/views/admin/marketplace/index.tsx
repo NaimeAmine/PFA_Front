@@ -301,10 +301,10 @@ export default function Marketplace() {
     fetchData();
 
     // Set interval to call fetchData every 3 seconds
-    const intervalId = setInterval(fetchData, 3000);
+    // const intervalId = setInterval(fetchData, 3000);
 
     // Clean up function to clear the interval when component unmounts or when dependency array changes
-    return () => clearInterval(intervalId);
+    // return () => clearInterval(intervalId);
   }, []);
 
   localStorage.setItem("reservations", JSON.stringify(bookings));
@@ -334,7 +334,7 @@ export default function Marketplace() {
   ) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/client/book-service`,
+        `http://localhost:8080/api/client/book-service/${clientId}`,
         {
           method: "POST",
           headers: {
@@ -503,76 +503,40 @@ export default function Marketplace() {
               <Text color={textColor} fontSize="2xl" ms="24px" fontWeight="700">
                 Services
               </Text>
-              {userType !== "company" ? (
-                <Flex
-                  align="center"
-                  me="20px"
-                  ms={{ base: "24px", md: "0px" }}
-                  mt={{ base: "20px", md: "0px" }}
-                >
-                  <Link
-                    color={textColorBrand}
-                    fontWeight="500"
-                    me={{ base: "34px", md: "44px" }}
-                    href="#art"
-                  >
-                    Hotels
-                  </Link>
-                  <Link
-                    color={textColorBrand}
-                    fontWeight="500"
-                    me={{ base: "34px", md: "44px" }}
-                    href="#music"
-                  >
-                    Restaurant
-                  </Link>
-                  <Link
-                    color={textColorBrand}
-                    fontWeight="500"
-                    me={{ base: "34px", md: "44px" }}
-                    href="#collectibles"
-                  >
-                    Salle de Sports
-                  </Link>
-                </Flex>
-              ) : (
-                <>
-                  <InitialFocus />
-                </>
-              )}
+              <InitialFocus />
             </Flex>
             <SimpleGrid columns={{ base: 1, md: 3 }} gap="20px">
               {userType === "company"
                 ? ads.map((ad) => (
-                    <>
-                      <CompanyCard
-                        name={ad.serviceName}
-                        author={ad.description}
-                        price={ad.price}
-                        image={ad.returnedImg}
-                        download="#"
-                        onDelete={() => deleteAd(ad.id)}
-                        onUpdate={(e: any) => {
-                          e.preventDefault();
-                          handleUpdate(ad.id);
-                        }}
-                      />
-                    </>
-                  ))
-                : ads.map((ad) => (
-                    <NFT
+                  <>
+                    <CompanyCard
                       name={ad.serviceName}
                       author={ad.description}
                       price={ad.price}
                       image={ad.returnedImg}
                       download="#"
-                      bookedStatus={ad.booked}
-                      onBook={(e: any) => {
+                      onDelete={() => deleteAd(ad.id)}
+                      onUpdate={(e: any) => {
                         e.preventDefault();
-                        handleBooking(ad.id, ad.userId, ad.serviceName);
+                        handleUpdate(ad.id);
                       }}
                     />
-                  ))}
+                  </>
+                ))
+                : ads.map((ad) => (
+                  <NFT
+                    name={ad.serviceName}
+                    author={ad.description}
+                    price={ad.price}
+                    image={ad.returnedImg}
+                    download="#"
+                    bookedStatus={ad.booked}
+                    onBook={(e: any) => {
+                      e.preventDefault();
+                      handleBooking(ad.id, ad.userId, ad.serviceName);
+                    }}
+                  />
+                ))}
             </SimpleGrid>
           </Flex>
         </Flex>

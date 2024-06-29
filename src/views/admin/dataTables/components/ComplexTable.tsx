@@ -109,79 +109,88 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
           </Tr>
         </Thead>
         <Tbody>
-          {tableData.map((item) => (
-            <Tr key={item.id}>
-              <Td>{item.id}</Td>
-              <Td>{item.userName}</Td>
-              <Td>{item.bookDate}</Td>
-              <Td>{item.serviceName}</Td>
-              <Td>
-                <Flex align="center">
-                  <Icon
-                    w="24px"
-                    h="24px"
-                    me="5px"
-                    color={
-                      item.reservationStatus === "ACCEPTED"
-                        ? "green.500"
-                        : item.reservationStatus === "REJECTED"
-                        ? "red.500"
-                        : item.reservationStatus === "PENDING"
-                        ? "orange.500"
-                        : null
-                    }
-                    as={
-                      item.reservationStatus === "ACCEPTED"
-                        ? MdCheckCircle
-                        : item.reservationStatus === "REJECTED"
-                        ? MdCancel
-                        : item.reservationStatus === "PENDING"
-                        ? MdOutlineError
-                        : null
-                    }
-                  />
-                  {item.reservationStatus}
-                </Flex>
-              </Td>
-              {localStorage.getItem("userType") === "COMPANY" && (
+          {tableData
+
+            .map((item) => (
+              <Tr key={item.id}>
+                <Td>{item.id}</Td>
+                <Td>{item.userName}</Td>
+                <Td>{item.bookDate}</Td>
+                <Td>{item.serviceName}</Td>
                 <Td>
-                  <Stack direction={"row"} spacing={2}>
-                    <Stack
-                      direction={"row"}
-                      spacing={2}
-                      justifyContent={"center"}
-                      alignItems={"center"}
-                      backgroundColor={"green.500"}
-                      borderRadius={15}
-                      padding={3}
-                      _hover={{ bg: "green.600" }}
-                      transition={"all 0.3s"}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAccept(item.id);
-                      }}
-                      cursor="pointer"
-                    >
-                      <Text color={"white"}>Accepter</Text>
-                      <CheckIcon color={"white"} />
-                    </Stack>
-                    <IconButton
-                      isRound={true}
-                      background={"red.500"}
-                      aria-label="Done"
-                      fontSize="20px"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleReject(item.id);
-                      }}
-                      _hover={{ bg: "red.600" }}
-                      icon={<CloseIcon fontSize={"13px"} color={"white"} />}
+
+
+
+                  <Flex align="center">
+                    <Icon
+                      w="24px"
+                      h="24px"
+                      me="5px"
+                      color={
+                        item.reservationStatus === "ACCEPTED"
+                          ? "green.500"
+                          : item.reservationStatus === "REJECTED"
+                            ? "red.500"
+                            : item.reservationStatus === "PENDING"
+                              ? "orange.500"
+                              : null
+                      }
+                      as={
+                        item.reservationStatus === "ACCEPTED"
+                          ? MdCheckCircle
+                          : item.reservationStatus === "REJECTED"
+                            ? MdCancel
+                            : item.reservationStatus === "PENDING"
+                              ? MdOutlineError
+                              : null
+                      }
                     />
-                  </Stack>
+                    {item.reservationStatus}
+                  </Flex>
+
                 </Td>
-              )}
-            </Tr>
-          ))}
+                {localStorage.getItem("userType") === "COMPANY" && (
+                  <Td>
+
+                    {item.reviewStatus === "PENDING" && (
+                      <Stack direction={"row"} spacing={2}>
+                        <Stack
+                          direction={"row"}
+                          spacing={2}
+                          justifyContent={"center"}
+                          alignItems={"center"}
+                          backgroundColor={"green.500"}
+                          borderRadius={15}
+                          padding={3}
+                          _hover={{ bg: "green.600" }}
+                          transition={"all 0.3s"}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAccept(item.id);
+                          }}
+                          cursor="pointer"
+                        >
+                          <Text color={"white"}>Accepter</Text>
+                          <CheckIcon color={"white"} />
+                        </Stack>
+                        <IconButton
+                          isRound={true}
+                          background={"red.500"}
+                          aria-label="Done"
+                          fontSize="20px"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleReject(item.id);
+                          }}
+                          _hover={{ bg: "red.600" }}
+                          icon={<CloseIcon fontSize={"13px"} color={"white"} />}
+                        />
+                      </Stack>
+                    )}
+                  </Td>
+                )}
+              </Tr>
+            ))}
         </Tbody>
       </Table>
     </Flex>
