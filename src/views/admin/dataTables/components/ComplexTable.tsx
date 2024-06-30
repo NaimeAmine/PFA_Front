@@ -12,9 +12,12 @@ import {
   Icon,
   IconButton,
   Stack,
+  CircularProgress,
+  Box,
 } from "@chakra-ui/react";
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
 import { CheckIcon, CloseIcon } from "@chakra-ui/icons";
+import { FaCartPlus, FaPlus } from "react-icons/fa";
 
 interface TableDataItem {
   id: number;
@@ -39,6 +42,7 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
   isAfficherTout,
   refresh,
 }) => {
+  const [loading, setLoading] = React.useState(false);
   const handleAccept = async (id: number) => {
     await fetch(`http://localhost:8080/api/company/booking/${id}/ACCEPTED`, {
       method: "PUT",
@@ -49,6 +53,7 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
       .then((response) => {
         if (response.ok) {
           refresh();
+          setLoading(false);
         } else {
           alert("Error accepting reservation");
         }
@@ -83,6 +88,31 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
       w="100%"
       overflowX={{ sm: "scroll", lg: "hidden" }}
     >
+      {loading && (
+        <>
+          <Box
+            position="absolute"
+            top="0"
+            left="0"
+            width="100%"
+            height="100%"
+            bg="rgba(255, 255, 255, 0.6)"
+            style={{ backdropFilter: 'blur(5px)' }}
+            zIndex="9"
+          />
+          <Flex
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
+            align="center"
+            justify="center"
+            zIndex="10"
+          >
+            <CircularProgress isIndeterminate color="green.300" />
+          </Flex>
+        </>
+      )}
       <Flex
         align={{ sm: "flex-start", lg: "center" }}
         justify="space-between"
@@ -101,7 +131,7 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
         <Thead>
           <Tr>
             <Th>Id</Th>
-            <Th>Nom client</Th>
+            {localStorage.getItem("userType") === "COMPANY" && <Th>Id client</Th>}
             <Th>Date Reservation</Th>
             <Th>Nom de service</Th>
             <Th>Etat de reservation</Th>
@@ -110,17 +140,13 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
         </Thead>
         <Tbody>
           {tableData
-
             .map((item) => (
               <Tr key={item.id}>
                 <Td>{item.id}</Td>
-                <Td>{item.userName}</Td>
+                {localStorage.getItem("userType") === "COMPANY" && <Td>{item.userId}</Td>}
                 <Td>{item.bookDate}</Td>
                 <Td>{item.serviceName}</Td>
                 <Td>
-
-
-
                   <Flex align="center">
                     <Icon
                       w="24px"
@@ -149,10 +175,35 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
                   </Flex>
 
                 </Td>
+                {localStorage.getItem("userType") !== "COMPANY" && (
+                  <Td>
+                    <Stack direction={"row"} spacing={2}>
+                      <Stack
+                        direction={"row"}
+                        spacing={2}
+                        justifyContent={"center"}
+                        alignItems={"center"}
+                        backgroundColor={"green.500"}
+                        borderRadius={15}
+                        padding={3}
+                        _hover={{ bg: "green.600" }}
+                        transition={"all 0.3s"}
+                        onClick={(e) => {
+                          e.preventDefault();
+
+                        }}
+                        cursor="pointer"
+                      >
+                        <Text color={"white"}>Ajouter Eqs</Text>
+                        <FaCartPlus color={"white"} />
+                      </Stack>
+
+                    </Stack>
+                  </Td>
+                )}
                 {localStorage.getItem("userType") === "COMPANY" && (
                   <Td>
-
-                    {item.reviewStatus === "PENDING" && (
+                    {item.reservationStatus === "PENDING" && (
                       <Stack direction={"row"} spacing={2}>
                         <Stack
                           direction={"row"}
@@ -166,6 +217,7 @@ const FullTableRes: React.FC<TopCreatorTableProps> = ({
                           transition={"all 0.3s"}
                           onClick={(e) => {
                             e.preventDefault();
+                            setLoading(true);
                             handleAccept(item.id);
                           }}
                           cursor="pointer"

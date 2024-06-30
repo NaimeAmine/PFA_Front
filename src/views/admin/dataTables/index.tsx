@@ -84,10 +84,10 @@ export default function Settings() {
           gridArea={{ xl: "1", "2xl": "1 " }}
         >
           <Card px="0px" mb="20px">
-            <FullTableRes tableData={bookings} 
-				isAfficherTout={false}
-				refresh={fetchReservations}
-			/>
+            <FullTableRes tableData={bookings}
+              isAfficherTout={false}
+              refresh={fetchReservations}
+            />
           </Card>
         </Flex>
       </SimpleGrid>

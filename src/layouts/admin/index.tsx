@@ -6,7 +6,7 @@ import Navbar from "components/navbar/NavbarAdmin";
 import Sidebar from "components/sidebar/Sidebar";
 import { SidebarContext } from "contexts/SidebarContext";
 import { useState } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import routes from "routes";
 
 // Custom Chakra theme
@@ -16,10 +16,8 @@ export default function Dashboard(props: { [x: string]: any }) {
   const [fixed] = useState(false);
   const [toggleSidebar, setToggleSidebar] = useState(false);
   // functions for changing the states from components
-  const getRoute = () => {
-    return window.location.pathname !== "/admin/full-screen-maps";
-  };
-  const getActiveRoute = (routes: RoutesType[]): string => {
+
+  const getActiveRoute = (routes: any) => {
     let activeRoute = "Default Brand Text";
     for (let i = 0; i < routes.length; i++) {
       if (
@@ -30,7 +28,7 @@ export default function Dashboard(props: { [x: string]: any }) {
     }
     return activeRoute;
   };
-  const getActiveNavbar = (routes: RoutesType[]): boolean => {
+  const getActiveNavbar = (routes: any) => {
     let activeNavbar = false;
     for (let i = 0; i < routes.length; i++) {
       if (
@@ -41,7 +39,7 @@ export default function Dashboard(props: { [x: string]: any }) {
     }
     return activeNavbar;
   };
-  const getActiveNavbarText = (routes: RoutesType[]): string | boolean => {
+  const getActiveNavbarText = (routes: any) => {
     let activeNavbar = false;
     for (let i = 0; i < routes.length; i++) {
       if (
@@ -52,13 +50,13 @@ export default function Dashboard(props: { [x: string]: any }) {
     }
     return activeNavbar;
   };
-  const getRoutes = (routes: RoutesType[]): any => {
-    return routes.map((route: RoutesType, key: any) => {
+  const getRoutes = (routes: any) => {
+    return routes.map((route: any, key: any) => {
       if (route.layout === "/admin") {
         return (
           <Route
             path={route.layout + route.path}
-            component={route.component}
+            element={route.element}
             key={key}
           />
         );
@@ -107,28 +105,28 @@ export default function Dashboard(props: { [x: string]: any }) {
               </Box>
             </Portal>
 
-            {getRoute() ? (
-              <Box
-                mx="auto"
-                p={{ base: "20px", md: "30px" }}
-                pe="20px"
-                minH="100vh"
-                pt="50px"
-              >
-                <Switch>
-                  {getRoutes(routes)}
 
-                  <Redirect from="/" to="/admin/services" />
-                </Switch>
-              </Box>
-            ) : null}
+            <Box
+              mx="auto"
+              p={{ base: "20px", md: "30px" }}
+              pe="20px"
+              minH="100vh"
+              pt="50px"
+            >
+              <Routes>
+                {getRoutes(routes)}
+
+                <Route path="/" element={<Navigate to="/admin/services" />} />
+              </Routes>
+            </Box>
+
             <Box>
               <Footer />
             </Box>
           </Box>
         </SidebarContext.Provider>
       ) : (
-        <Redirect from="/" to="/auth/sign-in" />
+        <Navigate to="/auth/sign-in" />
       )}
     </Box>
   );

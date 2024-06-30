@@ -44,6 +44,7 @@ import {
   ModalCloseButton,
   ModalFooter,
   Textarea,
+  CircularProgress,
 } from "@chakra-ui/react";
 
 // Custom components
@@ -53,20 +54,9 @@ import HistoryItem from "views/admin/marketplace/components/HistoryItem";
 import NFT from "components/card/NFT";
 import Card from "components/card/Card";
 
-// Assets
-import Nft1 from "assets/img/nfts/Nft1.png";
-import Nft2 from "assets/img/nfts/Nft2.png";
-import Nft3 from "assets/img/nfts/Nft3.png";
-import Nft4 from "assets/img/nfts/Nft4.png";
-import Nft5 from "assets/img/nfts/Nft5.png";
-import Nft6 from "assets/img/nfts/Nft6.png";
-import Avatar1 from "assets/img/avatars/avatar1.png";
-import Avatar2 from "assets/img/avatars/avatar2.png";
-import Avatar3 from "assets/img/avatars/avatar3.png";
-import Avatar4 from "assets/img/avatars/avatar4.png";
-import tableDataTopCreators from "views/admin/marketplace/variables/tableDataTopCreators";
 import CompanyCard from "components/card/CompanyCard";
 import { SearchContext } from "context/SearchContext";
+import Swal from 'sweetalert2';
 
 function InitialFocus() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -205,7 +195,7 @@ export default function Marketplace() {
   const [file, setFile] = useState(null);
   const clientId = localStorage.getItem("clientId");
   const { searchValue } = useContext(SearchContext);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (searchValue === "") {
       fetchAds();
@@ -332,6 +322,9 @@ export default function Marketplace() {
     companyId: string,
     serviceName: string
   ) => {
+    setLoading(true); // Set loading to true before starting the fetch request
+
+
     try {
       const response = await fetch(
         `http://localhost:8080/api/client/book-service/${clientId}`,
@@ -352,15 +345,40 @@ export default function Marketplace() {
       );
 
       if (response.ok) {
-        // Handle success
-        alert(`Service ${serviceName} booked successfully`);
+        Swal.fire({
+          title: 'Success!',
+          text: `Service ${serviceName} booked successfully`,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+        fetchAds();
+      } else if (response.status === 403) {
+        Swal.fire({
+          title: 'Error',
+          text: 'You have already reserved this article',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       } else {
-        // Handle error
-        alert("Error booking service");
+        Swal.fire({
+          title: 'Error',
+          text: 'Error booking service',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     } catch (error) {
       console.error("Error booking service:", error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Error booking service',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    } finally {
+      setLoading(false); // Set loading to false after the fetch request completes
     }
+
   };
   const handleUpdateSubmit = async () => {
     const formData = new FormData();
@@ -417,6 +435,32 @@ export default function Marketplace() {
   const textColorBrand = useColorModeValue("brand.500", "white");
   return (
     <Box pt={{ base: "180px", md: "80px", xl: "80px" }}>
+      {loading && (
+        <>
+          <Box
+            position="absolute"
+            top="0"
+            left="0"
+            width="100%"
+            height="100%"
+            bg="rgba(255, 255, 255, 0.6)"
+            style={{ backdropFilter: 'blur(5px)' }}
+            zIndex="9"
+          />
+          <Flex
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
+            align="center"
+            justify="center"
+            zIndex="10"
+          >
+            <CircularProgress isIndeterminate color="green.300" />
+          </Flex>
+        </>
+      )}
+
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -496,13 +540,12 @@ export default function Marketplace() {
             <Flex
               mt="45px"
               mb="20px"
-              justifyContent="space-between"
+              justifyContent="end"
+              alignItems={"end"}
               direction={{ base: "column", md: "row" }}
               align={{ base: "start", md: "center" }}
             >
-              <Text color={textColor} fontSize="2xl" ms="24px" fontWeight="700">
-                Services
-              </Text>
+
               <InitialFocus />
             </Flex>
             <SimpleGrid columns={{ base: 1, md: 3 }} gap="20px">

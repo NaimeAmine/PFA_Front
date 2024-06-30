@@ -16,45 +16,68 @@ import RTL from "views/admin/rtl";
 // Auth Imports
 import SignInCentered from "views/auth/signIn";
 import SignUpCentered from "views/auth/signUp";
+import Equipments from "views/admin/equipments";
+import { FaBox, FaHome } from "react-icons/fa";
+import HomePage from "views/client/homepage";
+import { FcHome } from "react-icons/fc";
 
 const routes = [
   {
-    name: "Services",
+    name: "Salles",
     layout: "/admin",
     path: "/services",
     icon: (
       <Icon
-        as={MdOutlineShoppingCart}
+        as={FaHome}
         width="20px"
         height="20px"
         color="inherit"
       />
     ),
-    component: NFTMarketplace,
+    element: <NFTMarketplace />,
     secondary: true,
+    role: "admin",
+  },
+  {
+    name: "Home",
+    layout: "/client",
+    icon: <Icon as={FcHome} width="20px" height="20px" color="inherit" />,
+    path: "/home",
+    element: <HomePage />,
+    role: "client",
   },
   {
     name: "Reservations",
     layout: "/admin",
     icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
     path: "/data-tables",
-    component: DataTables,
+    element: <DataTables />,
+    role: "all",
+  },
+  {
+    name: "Equipments",
+    layout: "/admin",
+    icon: <Icon as={FaBox} width="20px" height="20px" color="inherit" />,
+    path: "/equipments",
+    element: <Equipments />,
+    role: "admin",
   },
   {
     name: "Sign In",
     layout: "/auth",
     path: "/sign-in",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
-    component: SignInCentered,
+    element: <SignInCentered />,
+    role: "all",
   },
   {
-    name: "Sign In",
+    name: "Sign Up",
     layout: "/auth",
     path: "/sign-up",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
-    component: SignUpCentered,
+    element: <SignUpCentered />,
+    role: "all",
   },
- 
 ];
 
 export default routes;
