@@ -17,6 +17,7 @@ ReactDOM.render(
       <React.StrictMode>
         <BrowserRouter>
           <Routes>
+            <Route path="/admin/data-tables" element={<AdminLayout />} />
             <Route path="/auth/sign-in" element={<SignIn />} />
             <Route path="/auth/sign-up" element={<SignUp />} />
             <Route path="/auth/*" element={<AuthLayout />} />

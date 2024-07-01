@@ -39,7 +39,6 @@ export default function HomePage() {
         e.preventDefault();
         Cookies.set("startDate", startDate.toString());
         if (endDate != null) {
-
             Cookies.set("endDate", endDate?.toString());
         }
 

@@ -1,72 +1,64 @@
-// Chakra imports
 import { Portal, Box, useDisclosure } from "@chakra-ui/react";
 import Footer from "components/footer/FooterAdmin";
-// Layout components
 import Navbar from "components/navbar/NavbarAdmin";
 import Sidebar from "components/sidebar/Sidebar";
 import { SidebarContext } from "contexts/SidebarContext";
 import { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import routes from "routes";
 
-// Custom Chakra theme
 export default function Dashboard(props: { [x: string]: any }) {
   const { ...rest } = props;
   // states and functions
   const [fixed] = useState(false);
   const [toggleSidebar, setToggleSidebar] = useState(false);
-  // functions for changing the states from components
+  const location = useLocation(); // Get current location
 
+  // functions for changing the states from components
   const getActiveRoute = (routes: any) => {
     let activeRoute = "Default Brand Text";
-    for (let i = 0; i < routes.length; i++) {
-      if (
-        window.location.href.indexOf(routes[i].layout + routes[i].path) !== -1
-      ) {
-        return routes[i].name;
+    routes.forEach((route: any) => {
+      if (location.pathname.indexOf(route.layout + route.path) !== -1) {
+        activeRoute = route.name;
       }
-    }
+    });
     return activeRoute;
   };
+
   const getActiveNavbar = (routes: any) => {
     let activeNavbar = false;
-    for (let i = 0; i < routes.length; i++) {
-      if (
-        window.location.href.indexOf(routes[i].layout + routes[i].path) !== -1
-      ) {
-        return routes[i].secondary;
+    routes.forEach((route: any) => {
+      if (location.pathname.indexOf(route.layout + route.path) !== -1) {
+        activeNavbar = route.secondary;
       }
-    }
+    });
     return activeNavbar;
   };
+
   const getActiveNavbarText = (routes: any) => {
-    let activeNavbar = false;
-    for (let i = 0; i < routes.length; i++) {
-      if (
-        window.location.href.indexOf(routes[i].layout + routes[i].path) !== -1
-      ) {
-        return routes[i].name;
+    let activeNavbarText = "";
+    routes.forEach((route: any) => {
+      if (location.pathname.indexOf(route.layout + route.path) !== -1) {
+        activeNavbarText = route.name;
       }
-    }
-    return activeNavbar;
+    });
+    return activeNavbarText;
   };
-  const getRoutes = (routes: any) => {
+
+  const renderRoutes = (routes: any) => {
     return routes.map((route: any, key: any) => {
       if (route.layout === "/admin") {
         return (
-          <Route
-            path={route.layout + route.path}
-            element={route.element}
-            key={key}
-          />
+          <Route path={route.path} element={route.element} key={key} />
         );
       } else {
         return null;
       }
     });
   };
-  document.documentElement.dir = "ltr";
+
   const { onOpen } = useDisclosure();
+
   return (
     <Box>
       {localStorage.getItem("clientId") ? (
@@ -95,7 +87,7 @@ export default function Dashboard(props: { [x: string]: any }) {
               <Box>
                 <Navbar
                   onOpen={onOpen}
-                  logoText={"Horizon UI Dashboard PRO"}
+                  logoText={"Bureau"}
                   brandText={getActiveRoute(routes)}
                   secondary={getActiveNavbar(routes)}
                   message={getActiveNavbarText(routes)}
@@ -105,7 +97,6 @@ export default function Dashboard(props: { [x: string]: any }) {
               </Box>
             </Portal>
 
-
             <Box
               mx="auto"
               p={{ base: "20px", md: "30px" }}
@@ -114,9 +105,7 @@ export default function Dashboard(props: { [x: string]: any }) {
               pt="50px"
             >
               <Routes>
-                {getRoutes(routes)}
-
-                <Route path="/" element={<Navigate to="/admin/services" />} />
+                {renderRoutes(routes)}
               </Routes>
             </Box>
 

@@ -55,7 +55,7 @@ function SignIn() {
 
   useEffect(() => {
     document.title = "Se connecter - Horizon UI";
-    if (localStorage.getItem("clientId")) window.location.href = "/dashboard";
+    if (localStorage.getItem("clientId")) window.location.href = "/admin/services";
   }, []);
 
   // Handle form submission
@@ -84,7 +84,7 @@ function SignIn() {
       localStorage.setItem("clientId", data.userId);
       localStorage.setItem("userType", data.role);
       localStorage.setItem("remember", remember.toString());
-      window.location.href = "/dashboard";
+      window.location.href = "/admin/services";
       console.log("Login successful:", data);
     } catch (error) {
       // Handle network errors and JSON parsing errors

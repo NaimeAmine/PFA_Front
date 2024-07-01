@@ -16,13 +16,8 @@ export default function Auth() {
   const getRoutes = (routes: any) => {
     return routes.map((route: any, key: any) => {
       if (route.layout === "/auth") {
-        console.log(route.layout + route.path)
         return (
-          <Route
-            path={route.layout + route.path}
-            element={route.element} // Use route.element directly
-            key={key}
-          />
+          route.element
         );
       } else {
         return null;
@@ -54,10 +49,8 @@ export default function Auth() {
           transitionTimingFunction="linear, linear, ease"
         >
           <Box mx="auto" minH="100vh">
-            <Routes>
-              {getRoutes(routes)}
-              <Route path="/auth" element={<Navigate to="/auth/sign-in" />} />
-            </Routes>
+            {getRoutes(routes)}
+
           </Box>
         </Box>
       </SidebarContext.Provider>
