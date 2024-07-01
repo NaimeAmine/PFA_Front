@@ -36,7 +36,7 @@ const routes = [
     ),
     element: <NFTMarketplace />,
     secondary: true,
-    role: "admin",
+    role: "all",
   },
   {
     name: "Home",

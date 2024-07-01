@@ -137,6 +137,9 @@ function Equipments({ fetchAds }: any) {
 
     return (
         <>
+        {localStorage.getItem("userType") === "COMPANY" && (
+
+
             <Button
                 variant="darkBrand"
                 color="white"
@@ -149,6 +152,7 @@ function Equipments({ fetchAds }: any) {
             >
                 Ajouter
             </Button>
+        )}
             <Modal
                 initialFocusRef={initialRef}
                 finalFocusRef={finalRef}

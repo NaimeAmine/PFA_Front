@@ -57,6 +57,7 @@ import Card from "components/card/Card";
 import CompanyCard from "components/card/CompanyCard";
 import { SearchContext } from "context/SearchContext";
 import Swal from 'sweetalert2';
+import { FaPlus } from "react-icons/fa";
 
 function InitialFocus() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -103,18 +104,7 @@ function InitialFocus() {
   };
   return (
     <>
-      <Button
-        variant="darkBrand"
-        color="white"
-        fontSize="sm"
-        fontWeight="500"
-        borderRadius="70px"
-        px="24px"
-        py="5px"
-        onClick={onOpen}
-      >
-        Ajouter
-      </Button>
+
       <Modal
         initialFocusRef={initialRef}
         finalFocusRef={finalRef}
@@ -549,6 +539,41 @@ export default function Marketplace() {
               <InitialFocus />
             </Flex>
             <SimpleGrid columns={{ base: 1, md: 3 }} gap="20px">
+              <>
+              {localStorage.getItem("userType") === "COMPANY" && (
+ 
+
+<Card 
+width={"300px"}
+height={"300px"}
+justifyContent="center"
+onClick={onOpen}
+cursor="pointer"
+style={{borderRadius: "20px",
+  boxShadow: "rgba(0, 0, 0, 0.05) 0px 4px 20px 4px"
+  
+}}
+>
+  <Flex justifyContent="center">
+      <FaPlus size="20px" color="brand.500" />
+  </Flex>
+ 
+</Card>
+       
+
+      // <Button
+      //   variant="darkBrand"
+      //   color="white"
+      //   fontSize="sm"
+      //   fontWeight="500"
+      //   borderRadius="70px"
+      //   px="24px"
+      //   py="5px"
+      //   onClick={onOpen}
+      // >
+      //   Ajouter
+      // </Button>
+    )}</>
               {userType === "company"
                 ? ads.map((ad) => (
                   <>
