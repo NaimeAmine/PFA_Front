@@ -45,6 +45,11 @@ import {
   ModalFooter,
   Textarea,
   CircularProgress,
+  Select,
+  Image,
+  Heading,
+  NumberInput,
+  IconButton,
 } from "@chakra-ui/react";
 
 // Custom components
@@ -56,10 +61,12 @@ import Card from "components/card/Card";
 
 import CompanyCard from "components/card/CompanyCard";
 import { SearchContext } from "context/SearchContext";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import { FaPlus } from "react-icons/fa";
+import { Calendar } from "react-calendar";
+import { ArrowBackIcon } from "@chakra-ui/icons";
 
-function InitialFocus() {
+function InitialFocus({ fetchAds }: { fetchAds: any }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const initialRef = React.useRef(null);
@@ -92,8 +99,15 @@ function InitialFocus() {
         }
       );
       if (response.ok) {
-        // Handle success
-        alert("Service added successfully");
+        // Handle successalert("Service added successfully");
+        Swal.fire({
+          title: "Success!",
+          text: "Service added successfully",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+        onClose();
+        fetchAds();
       } else {
         // Handle error
         alert("Error adding service");
@@ -104,7 +118,6 @@ function InitialFocus() {
   };
   return (
     <>
-
       <Modal
         initialFocusRef={initialRef}
         finalFocusRef={finalRef}
@@ -123,9 +136,7 @@ function InitialFocus() {
                 placeholder="Nom de service"
                 value={name}
                 onChange={(e) => {
-                  if (e.target.value) {
-                    setName(e.target.value);
-                  }
+                  setName(e.target.value);
                 }}
               />
             </FormControl>
@@ -136,9 +147,7 @@ function InitialFocus() {
                 placeholder="Prix"
                 value={price}
                 onChange={(e) => {
-                  if (e.target.value) {
-                    setPrice(e.target.value);
-                  }
+                  setPrice(e.target.value);
                 }}
               />
             </FormControl>
@@ -149,9 +158,7 @@ function InitialFocus() {
                 placeholder="Description"
                 value={description}
                 onChange={(e) => {
-                  if (e.target.value) {
-                    setDescription(e.target.value);
-                  }
+                  setDescription(e.target.value);
                 }}
               />
             </FormControl>
@@ -173,8 +180,14 @@ function InitialFocus() {
     </>
   );
 }
+
+interface DateRange {
+  start: Date;
+  end: Date;
+}
 export default function Marketplace() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isReservation, setIsReservation] = useState(false);
 
   const initialRef = React.useRef(null);
   const [bookings, setBookings] = useState([]);
@@ -186,6 +199,11 @@ export default function Marketplace() {
   const clientId = localStorage.getItem("clientId");
   const { searchValue } = useContext(SearchContext);
   const [loading, setLoading] = useState(false);
+  const [steps, setSteps] = useState(0);
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedAdId, setSelectedAdId] = useState("");
+  const [companiesEqs, setCompaniesEqs] = useState([]);
+  const [selectedEqs, setSelectedEqs] = useState(0);
   useEffect(() => {
     if (searchValue === "") {
       fetchAds();
@@ -314,7 +332,6 @@ export default function Marketplace() {
   ) => {
     setLoading(true); // Set loading to true before starting the fetch request
 
-
     try {
       const response = await fetch(
         `http://localhost:8080/api/client/book-service/${clientId}`,
@@ -326,6 +343,7 @@ export default function Marketplace() {
           body: JSON.stringify({
             id: parseInt(clientId),
             bookDate: new Date(),
+            endDate: new Date(),
             adId: adId,
             companyId: companyId,
             userId: parseInt(clientId),
@@ -336,39 +354,38 @@ export default function Marketplace() {
 
       if (response.ok) {
         Swal.fire({
-          title: 'Success!',
+          title: "Success!",
           text: `Service ${serviceName} booked successfully`,
-          icon: 'success',
-          confirmButtonText: 'OK'
+          icon: "success",
+          confirmButtonText: "OK",
         });
         fetchAds();
       } else if (response.status === 403) {
         Swal.fire({
-          title: 'Error',
-          text: 'You have already reserved this article',
-          icon: 'error',
-          confirmButtonText: 'OK'
+          title: "Error",
+          text: "You have already reserved this article",
+          icon: "error",
+          confirmButtonText: "OK",
         });
       } else {
         Swal.fire({
-          title: 'Error',
-          text: 'Error booking service',
-          icon: 'error',
-          confirmButtonText: 'OK'
+          title: "Error",
+          text: "Error booking service",
+          icon: "error",
+          confirmButtonText: "OK",
         });
       }
     } catch (error) {
       console.error("Error booking service:", error);
       Swal.fire({
-        title: 'Error',
-        text: 'Error booking service',
-        icon: 'error',
-        confirmButtonText: 'OK'
+        title: "Error",
+        text: "Error booking service",
+        icon: "error",
+        confirmButtonText: "OK",
       });
     } finally {
       setLoading(false); // Set loading to false after the fetch request completes
     }
-
   };
   const handleUpdateSubmit = async () => {
     const formData = new FormData();
@@ -388,6 +405,7 @@ export default function Marketplace() {
 
       if (response.ok) {
         // Handle success
+        onClose();
         alert("Service updated successfully");
         fetchAds();
       } else {
@@ -421,8 +439,38 @@ export default function Marketplace() {
     }
   };
 
-  const textColor = useColorModeValue("secondaryGray.900", "white");
-  const textColorBrand = useColorModeValue("brand.500", "white");
+  const handleEqsSearch = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/company/equipment/byUser/${selectedCompany}`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        setCompaniesEqs(data);
+      } else {
+        // Handle non-OK response
+        alert("Error fetching ads");
+      }
+    } catch (error) {
+      console.error("Error fetching ads:", error);
+    }
+  };
+
+  const disabledRanges: DateRange[] = [
+    { start: new Date(2024, 6, 10), end: new Date(2024, 6, 14) },
+    { start: new Date(2024, 6, 24), end: new Date(2024, 6, 29) },
+  ];
+
+  const isDateDisabled = (date: Date) => {
+    return disabledRanges.some(
+      (range) => date >= range.start && date <= range.end
+    );
+  };
   return (
     <Box pt={{ base: "180px", md: "80px", xl: "80px" }}>
       {loading && (
@@ -434,7 +482,7 @@ export default function Marketplace() {
             width="100%"
             height="100%"
             bg="rgba(255, 255, 255, 0.6)"
-            style={{ backdropFilter: 'blur(5px)' }}
+            style={{ backdropFilter: "blur(5px)" }}
             zIndex="9"
           />
           <Flex
@@ -453,66 +501,204 @@ export default function Marketplace() {
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Create your account</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <FormControl>
-              <FormLabel>Nom de service</FormLabel>
-              <Input
-                ref={initialRef}
-                placeholder="Nom de service"
-                value={name}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setName(e.target.value);
-                  }
-                }}
-              />
-            </FormControl>
+        <ModalContent width={"900px"}>
+          {isReservation ? (
+            <>
+              {steps === 0 ? (
+                <>
+                  <ModalHeader>Resevation</ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody pb={6}>
+                    <FormLabel mt={10}>
+                      Choisir les dates de reservation
+                    </FormLabel>
+                    <FormControl>
+                      <Flex justifyContent={"center"}>
+                        <Calendar
+                          selectRange
+                          tileDisabled={({ date }: { date: Date }) =>
+                            isDateDisabled(date)
+                          }
+                          onChange={(e: any) => {
+                            console.log(e);
+                          }}
+                        />
+                      </Flex>
+                      <FormLabel mt={10}>
+                        Decouvrir nos category d'equipements
+                      </FormLabel>
+                      <Select placeholder="Choisir les dates de reservation">
+                        <option value="option1">Tableaux</option>
+                        <option value="option2">Datashows</option>
+                        <option value="option3">Ecrans</option>
+                        <option value="option4">Chaises</option>
+                        <option value="option5">Tables</option>
+                        <option value="option6">Autres</option>
+                      </Select>
+                    </FormControl>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      colorScheme="blue"
+                      mr={3}
+                      onClick={() => {
+                        handleEqsSearch();
 
-            <FormControl mt={4}>
-              <FormLabel>Prix</FormLabel>
-              <Input
-                placeholder="Prix"
-                value={price}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setPrice(e.target.value);
-                  }
-                }}
-              />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>Description</FormLabel>
+                        setSteps(1);
+                      }}
+                    >
+                      Suivant
+                    </Button>
+                  </ModalFooter>
+                </>
+              ) : (
+                <>
+                  <IconButton
+                    width={"30px"}
+                    mt={1}
+                    ml={1}
+                    aria-label=""
+                    onClick={() => {
+                      setSteps(0);
+                    }}
+                  >
+                    <ArrowBackIcon />
+                  </IconButton>
+                  <ModalHeader>Resevation</ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody pb={6}>
+                    {companiesEqs.map((eq: any) => (
+                      <Box
+                        width={"100%"}
+                        key={eq.id}
+                        p={4}
+                        alignItems={"center"}
+                        mb={4}
+                        bg="gray.200"
+                        borderRadius="md"
+                        justifyContent="start"
+                      >
+                        <Flex
+                          direction={"row"}
+                          width={"100%"}
+                          alignItems={"center"}
+                          justifyContent="space-between"
+                        >
+                          <Flex
+                            direction={"row"}
+                            alignItems={"center"}
+                            width="100%"
+                          >
+                            <Image
+                              objectFit={"cover"}
+                              src={`data:image/jpeg;base64,${eq.returnedImg}`}
+                              width="150px"
+                              height="100px"
+                              borderRadius="5px"
+                              mr={4}
+                            />
+                            <Flex direction={"column"}>
+                              <Heading size="lg">{eq.serviceName}</Heading>
 
-              <Textarea
-                placeholder="Description"
-                value={description}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setDescription(e.target.value);
-                  }
-                }}
-              />
-            </FormControl>
+                              <Text fontWeight={"light"}>{eq.description}</Text>
+                            </Flex>
+                          </Flex>
 
-            <FormControl mt={4}>
-              <FormLabel>Image</FormLabel>
-              <input type="file" onChange={handleFileChange} />
-            </FormControl>
-          </ModalBody>
+                          <Flex alignItems={"center"}>
+                            <Box
+                              fontWeight={"bold"}
+                              width="100%"
+                              fontSize="20px"
+                              mr={4}
+                            >
+                              <Text fontSize="sm">
+                                À partir de
+                                <Text fontSize={"22px"} fontWeight={"bold"}>
+                                  {eq.price} DH
+                                </Text>
+                              </Text>
+                              <Input
+                                type={"number"}
+                                backgroundColor={"white"}
+                              />
+                            </Box>
+                          </Flex>
+                        </Flex>
+                      </Box>
+                    ))}
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      colorScheme="blue"
+                      mr={3}
+                      onClick={() =>
+                        handleBooking(selectedAdId, selectedCompany, name)
+                      }
+                    >
+                      Reserver
+                    </Button>
+                    <Button onClick={onClose}>Annuler</Button>
+                  </ModalFooter>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <ModalHeader>Create your account</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody pb={6}>
+                <FormControl>
+                  <FormLabel>Nom de service</FormLabel>
+                  <Input
+                    ref={initialRef}
+                    placeholder="Nom de service"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                    }}
+                  />
+                </FormControl>
 
-          <ModalFooter>
-            <Button
-              colorScheme="blue"
-              mr={3}
-              onClick={() => handleUpdateSubmit()}
-            >
-              Modifier
-            </Button>
-            <Button onClick={onClose}>Annuler</Button>
-          </ModalFooter>
+                <FormControl mt={4}>
+                  <FormLabel>Prix</FormLabel>
+                  <Input
+                    placeholder="Prix"
+                    value={price}
+                    onChange={(e) => {
+                      setPrice(e.target.value);
+                    }}
+                  />
+                </FormControl>
+                <FormControl mt={4}>
+                  <FormLabel>Description</FormLabel>
+
+                  <Textarea
+                    placeholder="Description"
+                    value={description}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                    }}
+                  />
+                </FormControl>
+
+                <FormControl mt={4}>
+                  <FormLabel>Image</FormLabel>
+                  <input type="file" onChange={handleFileChange} />
+                </FormControl>
+              </ModalBody>
+
+              <ModalFooter>
+                <Button
+                  colorScheme="blue"
+                  mr={3}
+                  onClick={() => handleUpdateSubmit()}
+                >
+                  Modifier
+                </Button>
+                <Button onClick={onClose}>Annuler</Button>
+              </ModalFooter>
+            </>
+          )}
         </ModalContent>
       </Modal>
       {/* Main Fields */}
@@ -535,76 +721,67 @@ export default function Marketplace() {
               direction={{ base: "column", md: "row" }}
               align={{ base: "start", md: "center" }}
             >
-
-              <InitialFocus />
+              <InitialFocus fetchAds={fetchAds} />
             </Flex>
             <SimpleGrid columns={{ base: 1, md: 3 }} gap="20px">
-              <>
-              {localStorage.getItem("userType") === "COMPANY" && (
- 
-
-<Card 
-width={"300px"}
-height={"300px"}
-justifyContent="center"
-onClick={onOpen}
-cursor="pointer"
-style={{borderRadius: "20px",
-  boxShadow: "rgba(0, 0, 0, 0.05) 0px 4px 20px 4px"
-  
-}}
->
-  <Flex justifyContent="center">
-      <FaPlus size="20px" color="brand.500" />
-  </Flex>
- 
-</Card>
-       
-
-      // <Button
-      //   variant="darkBrand"
-      //   color="white"
-      //   fontSize="sm"
-      //   fontWeight="500"
-      //   borderRadius="70px"
-      //   px="24px"
-      //   py="5px"
-      //   onClick={onOpen}
-      // >
-      //   Ajouter
-      // </Button>
-    )}</>
+              <></>
               {userType === "company"
                 ? ads.map((ad) => (
-                  <>
-                    <CompanyCard
+                    <>
+                      <CompanyCard
+                        name={ad.serviceName}
+                        author={ad.description}
+                        price={ad.price}
+                        image={ad.returnedImg}
+                        download="#"
+                        onDelete={() => deleteAd(ad.id)}
+                        onUpdate={(e: any) => {
+                          e.preventDefault();
+                          handleUpdate(ad.id);
+                        }}
+                      />
+                    </>
+                  ))
+                : ads.map((ad) => (
+                    <NFT
                       name={ad.serviceName}
                       author={ad.description}
                       price={ad.price}
                       image={ad.returnedImg}
                       download="#"
-                      onDelete={() => deleteAd(ad.id)}
-                      onUpdate={(e: any) => {
+                      bookedStatus={ad.booked}
+                      onBook={(e: any) => {
                         e.preventDefault();
-                        handleUpdate(ad.id);
+                        setIsReservation(true);
+                        onOpen();
+                        setSelectedAdId(ad.id);
+                        setSelectedCompany(ad.userId);
+                        // handleBooking(ad.id, ad.userId, ad.serviceName);
                       }}
                     />
-                  </>
-                ))
-                : ads.map((ad) => (
-                  <NFT
-                    name={ad.serviceName}
-                    author={ad.description}
-                    price={ad.price}
-                    image={ad.returnedImg}
-                    download="#"
-                    bookedStatus={ad.booked}
-                    onBook={(e: any) => {
-                      e.preventDefault();
-                      handleBooking(ad.id, ad.userId, ad.serviceName);
-                    }}
-                  />
-                ))}
+                  ))}
+              {localStorage.getItem("userType") === "COMPANY" && (
+                <Card
+                  width={"290px"}
+                  height={"100px"}
+                  justifyContent="center"
+                  onClick={onOpen}
+                  cursor="pointer"
+                  style={{
+                    borderRadius: "20px",
+                    boxShadow: "rgba(0, 0, 0, 0.05) 0px 4px 20px 4px",
+                  }}
+                >
+                  <Flex
+                    justifyContent="center"
+                    direction={"column"}
+                    alignItems={"center"}
+                  >
+                    <FaPlus size="20px" color="brand.500" />
+                    Ajouter une salle
+                  </Flex>
+                </Card>
+              )}
             </SimpleGrid>
           </Flex>
         </Flex>

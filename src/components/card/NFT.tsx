@@ -141,7 +141,7 @@ export default function NFT(props: {
               }}
               mb="5px"
               fontWeight="bold"
-              me="14px"
+              flexWrap={"nowrap"}
             >
               {price} DH
             </Text>
@@ -162,37 +162,49 @@ export default function NFT(props: {
                 borderRadius="70px"
                 px="24px"
                 py="5px"
-                _hover={{ bg: "brand.500" }}
+                _hover={{
+                  bg:
+                    bookedStatus === "PENDING"
+                      ? "yellow.500"
+                      : bookedStatus === "ACCEPTED"
+                      ? "green.600"
+                      : "red.600",
+                }}
                 cursor="default"
               >
-                {bookedStatus}
+                {bookedStatus === "PENDING"
+                  ? "En attente"
+                  : bookedStatus === "ACCEPTED"
+                  ? "Accepté"
+                  : "Refusé"}
               </Button>
             ) : (
-              <></>
+              <>
+                <Link
+                  href={download}
+                  mt={{
+                    base: "0px",
+                    md: "10px",
+                    lg: "0px",
+                    xl: "10px",
+                    "2xl": "0px",
+                  }}
+                >
+                  <Button
+                    variant="darkBrand"
+                    color="white"
+                    fontSize="sm"
+                    fontWeight="500"
+                    borderRadius="70px"
+                    px="24px"
+                    py="5px"
+                    onClick={onBook}
+                  >
+                    Reserver
+                  </Button>
+                </Link>
+              </>
             )}
-            <Link
-              href={download}
-              mt={{
-                base: "0px",
-                md: "10px",
-                lg: "0px",
-                xl: "10px",
-                "2xl": "0px",
-              }}
-            >
-              <Button
-                variant="darkBrand"
-                color="white"
-                fontSize="sm"
-                fontWeight="500"
-                borderRadius="70px"
-                px="24px"
-                py="5px"
-                onClick={onBook}
-              >
-                Reserver
-              </Button>
-            </Link>
           </Flex>
         </Flex>
       </Flex>

@@ -60,7 +60,7 @@ const routes = [
     icon: <Icon as={FaBox} width="20px" height="20px" color="inherit" />,
     path: "/equipments",
     element: <Equipments />,
-    role: "admin",
+    role: "all",
   },
   {
     name: "Sign In",
