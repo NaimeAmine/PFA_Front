@@ -221,7 +221,7 @@ export default function HomePage() {
                   <CircularProgress isIndeterminate color="green.300" />
                 )}
               </Box>
-              {noData && <Box>Aucune salle disponible</Box>}
+              {room.length === 0 && <Box>Aucune salle disponible</Box>}
               {room.length > 0 && (
                 <Flex direction={"column"}>
                   {room.map((item: any) => (

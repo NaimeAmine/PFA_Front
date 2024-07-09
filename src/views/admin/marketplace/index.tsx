@@ -207,7 +207,7 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
   onQuantityChange,
 }) => {
   const [selectedEqs, setSelectedEqs] = useState<Set<any>>(new Set());
-
+  const [quantity, setQuantity] = useState(1);
   const handleCheckboxChange = (id: any) => {
     setSelectedEqs((prevSelectedEqs) => {
       const newSelectedEqs = new Set(prevSelectedEqs);
@@ -228,6 +228,11 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
   return (
     <>
       {companiesEqs.map((eq) => {
+        if (eq.quantity === 0) return null;
+        if (eq.quantity === null) eq.quantity = 1;
+        if (quantity === 1) {
+          eq.quantity = 1;
+        }
         const totalPrice = eq.price * eq.quantity;
 
         return (
@@ -279,9 +284,10 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
                     size="md"
                     maxW={24}
                     defaultValue={1}
-                    onChange={(valueString) =>
-                      onQuantityChange(eq.id, parseInt(valueString) || 1)
-                    }
+                    onChange={(valueString) => {
+                      setQuantity(parseInt(valueString) || 1);
+                      onQuantityChange(eq.id, parseInt(valueString) || 1);
+                    }}
                     min={1}
                   >
                     <NumberInputField background={"white"} />
@@ -342,12 +348,13 @@ export default function Marketplace() {
     setFile(e.target.files[0]);
   };
   const handleQuantityChange = (id: string, newQuantity: number) => {
-    setCompaniesEqs((prevList: any) =>
-      prevList.map((eq: any) =>
-        eq.id === id ? { ...eq, quantity: newQuantity } : eq
+    setCompaniesEqs((prevList) =>
+      prevList.map((eq) =>
+        eq.id === id ? { ...eq, quantity: Math.max(newQuantity, 1) } : eq
       )
     );
   };
+
   // Chakra Color Mode
   const [userType, setUserType] = useState("");
   useEffect(() => {
