@@ -197,7 +197,7 @@ interface Equipment {
 
 interface EquipmentListProps {
   companiesEqs: Equipment[];
-  onSelectedEqsChange: (selectedEqs: Set<string>) => void;
+  onSelectedEqsChange: (selectedEqs: Set<any>) => void;
   onQuantityChange: (id: string, quantity: number) => void; // Add this prop to handle quantity changes
 }
 
@@ -206,9 +206,9 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
   onSelectedEqsChange,
   onQuantityChange,
 }) => {
-  const [selectedEqs, setSelectedEqs] = useState<Set<string>>(new Set());
+  const [selectedEqs, setSelectedEqs] = useState<Set<any>>(new Set());
 
-  const handleCheckboxChange = (id: string) => {
+  const handleCheckboxChange = (id: any) => {
     setSelectedEqs((prevSelectedEqs) => {
       const newSelectedEqs = new Set(prevSelectedEqs);
       if (newSelectedEqs.has(id)) {
@@ -249,8 +249,8 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
             >
               <Flex direction={"row"} alignItems={"center"} width="100%">
                 <Checkbox
-                  isChecked={selectedEqs.has(eq.id)}
-                  onChange={() => handleCheckboxChange(eq.id)}
+                  isChecked={selectedEqs.has(eq)}
+                  onChange={() => handleCheckboxChange(eq)}
                   mr={4}
                 />
                 <Image
@@ -278,7 +278,6 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
                   <NumberInput
                     size="md"
                     maxW={24}
-                    value={eq.quantity}
                     defaultValue={1}
                     onChange={(valueString) =>
                       onQuantityChange(eq.id, parseInt(valueString) || 1)
@@ -328,7 +327,7 @@ export default function Marketplace() {
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedAdId, setSelectedAdId] = useState("");
   const [companiesEqs, setCompaniesEqs] = useState([]);
-  const [selectedEqs, setSelectedEqs] = useState<Set<string>>(new Set());
+  const [selectedEqs, setSelectedEqs] = useState<Set<any>>(new Set());
   useEffect(() => {
     if (searchValue === "") {
       fetchAds();
@@ -386,7 +385,6 @@ export default function Marketplace() {
       if (bookingsResp.ok) {
         const data = await bookingsResp.json();
         setAllBookings(data);
-        console.log(data);
       } else {
         // Handle non-OK response
         alert("Error fetching bookings");
@@ -492,7 +490,7 @@ export default function Marketplace() {
             adId: adId,
             companyId: companyId,
             userId: parseInt(clientId),
-            serviceName: "serviceName",
+            serviceName: serviceName,
             equipment: Array.from(selectedEqs),
           }),
         }
@@ -505,6 +503,21 @@ export default function Marketplace() {
           text: `Service ${serviceName} booked successfully`,
           icon: "success",
           confirmButtonText: "OK",
+          showCancelButton: true,
+          cancelButtonText: "Print Receipt",
+        }).then((result) => {
+          if (result.dismiss === Swal.DismissReason.cancel) {
+            printReceipt(
+              adId,
+              companyId,
+              serviceName,
+              startDate,
+              endDate,
+              selectedEqs,
+              clientId
+            );
+          }
+          window.location.reload();
         });
         fetchAds();
       } else if (response.status === 403) {
@@ -531,10 +544,153 @@ export default function Marketplace() {
         confirmButtonText: "OK",
       });
     } finally {
-      fetchAds();
       setLoading(false); // Set loading to false after the fetch request completes
+      fetchAds();
     }
   };
+  const printReceipt = (
+    adId: string,
+    companyId: string,
+    serviceName: string,
+    startDate: Date | null,
+    endDate: Date | null,
+    selectedEqs: Set<{
+      id: number;
+      name: string;
+      description: string;
+      img: string | null;
+      returnedImg: string;
+      price: number;
+      quantity: number;
+      category: string | null;
+      brand: string;
+    }>,
+    clientId: string
+  ) => {
+    const bookingDate = new Date().toLocaleString();
+    // Convert binary image data to Base64
+    const convertToBase64 = (binaryData: string) => {
+      const byteCharacters = atob(binaryData);
+      const byteNumbers = new Array(byteCharacters.length)
+        .fill(0)
+        .map((_, i) => byteCharacters.charCodeAt(i));
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "image/png" });
+      return URL.createObjectURL(blob);
+    };
+
+    // Generate equipment list HTML
+    const equipmentListHTML = Array.from(selectedEqs)
+      .map(
+        (eq) => `
+    <tr>
+      <td>${eq.id}</td>
+      <td>${eq.name}</td>
+      <td>${eq.description}</td>
+      <td>${
+        eq.returnedImg
+          ? `<img src="${convertToBase64(eq.returnedImg)}" alt="${
+              eq.name
+            }" width="50" height="50">`
+          : "No Image"
+      }</td>
+      <td>${eq.price}</td>
+      <td>${eq.quantity}</td>
+      <td>${eq.category ? eq.category : "N/A"}</td>
+      <td>${eq.brand}</td>
+    </tr>
+  `
+      )
+      .join("");
+    // Create a receipt content with styles
+    const receiptContent = `
+      <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+          }
+          h1 {
+            color: #4CAF50;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+          }
+          th {
+            background-color: #4CAF50;
+            color: white;
+          }
+          tr:nth-child(even) {
+            background-color: #f2f2f2;
+          }
+          img {
+            max-width: 50px;
+            max-height: 50px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Receipt</h1>
+        <p><strong>Service Name:</strong> ${serviceName}</p>
+        <p><strong>Booking Date:</strong> ${bookingDate}</p>
+        <p><strong>Start Date:</strong> ${
+          startDate ? startDate.toLocaleString() : new Date().toLocaleString()
+        }</p>
+        <p><strong>End Date:</strong> ${
+          endDate ? endDate.toLocaleString() : startDate?.toLocaleString()
+        }</p>
+        <table>
+          <tr>
+            <th>Details</th>
+            <th>Information</th>
+          </tr>
+          <tr>
+            <td>Ad ID</td>
+            <td>${adId}</td>
+          </tr>
+          <tr>
+            <td>Company ID</td>
+            <td>${companyId}</td>
+          </tr>
+          <tr>
+            <td>User ID</td>
+            <td>${parseInt(clientId)}</td>
+          </tr>
+        </table>
+        <h2>Equipment</h2>
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Image</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Category</th>
+            <th>Brand</th>
+          </tr>
+          ${equipmentListHTML}
+        </table>
+      </body>
+      </html>
+    `;
+
+    // Open a new window to print the receipt
+    const printWindow = window.open("", "", "height=800,width=1000");
+    printWindow.document.write(receiptContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   const handleUpdateSubmit = async () => {
     const formData = new FormData();
     formData.append("serviceName", name);
