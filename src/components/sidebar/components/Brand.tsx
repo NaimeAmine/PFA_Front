@@ -19,7 +19,7 @@ export function SidebarBrand() {
         ml={"-30px"}
         textAlign="center"
       >
-        EasyDesk
+        Bookify
       </Text>
       <HSeparator mb="20px" />
     </Flex>

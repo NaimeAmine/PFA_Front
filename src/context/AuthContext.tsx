@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const login = () => {
-    // Implement your login logic here
+    // Implement your login logic hereFl
     setIsAuthenticated(true);
   };
 

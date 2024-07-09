@@ -125,7 +125,7 @@ export default function HomePage() {
         color="white"
       >
         <Box>
-          <Heading size="md">EasyDesk</Heading>
+          <Heading size="md">Bookify</Heading>
         </Box>
         {localStorage.getItem("clientId") ? (
           <Box>

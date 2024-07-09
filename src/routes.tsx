@@ -23,22 +23,6 @@ import { FcHome } from "react-icons/fc";
 
 const routes = [
   {
-    name: "Salles",
-    layout: "/admin",
-    path: "/services",
-    icon: (
-      <Icon
-        as={FaHome}
-        width="20px"
-        height="20px"
-        color="inherit"
-      />
-    ),
-    element: <NFTMarketplace />,
-    secondary: true,
-    role: "all",
-  },
-  {
     name: "Home",
     layout: "/client",
     icon: <Icon as={FcHome} width="20px" height="20px" color="inherit" />,
@@ -46,6 +30,16 @@ const routes = [
     element: <HomePage />,
     role: "client",
   },
+  {
+    name: "Salles",
+    layout: "/admin",
+    path: "/services",
+    icon: <Icon as={FaHome} width="20px" height="20px" color="inherit" />,
+    element: <NFTMarketplace />,
+    secondary: true,
+    role: "all",
+  },
+
   {
     name: "Reservations",
     layout: "/admin",
@@ -60,7 +54,7 @@ const routes = [
     icon: <Icon as={FaBox} width="20px" height="20px" color="inherit" />,
     path: "/equipments",
     element: <Equipments />,
-    role: "all",
+    role: "admin",
   },
   {
     name: "Sign In",

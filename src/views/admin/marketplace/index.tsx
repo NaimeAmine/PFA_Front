@@ -50,6 +50,11 @@ import {
   Heading,
   NumberInput,
   IconButton,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Checkbox,
 } from "@chakra-ui/react";
 
 // Custom components
@@ -181,18 +186,138 @@ function InitialFocus({ fetchAds }: { fetchAds: any }) {
   );
 }
 
+interface Equipment {
+  id: string;
+  returnedImg: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number; // Ensure quantity is included in the interface
+}
+
+interface EquipmentListProps {
+  companiesEqs: Equipment[];
+  onSelectedEqsChange: (selectedEqs: Set<string>) => void;
+  onQuantityChange: (id: string, quantity: number) => void; // Add this prop to handle quantity changes
+}
+
+const EquipmentList: React.FC<EquipmentListProps> = ({
+  companiesEqs,
+  onSelectedEqsChange,
+  onQuantityChange,
+}) => {
+  const [selectedEqs, setSelectedEqs] = useState<Set<string>>(new Set());
+
+  const handleCheckboxChange = (id: string) => {
+    setSelectedEqs((prevSelectedEqs) => {
+      const newSelectedEqs = new Set(prevSelectedEqs);
+      if (newSelectedEqs.has(id)) {
+        newSelectedEqs.delete(id);
+      } else {
+        newSelectedEqs.add(id);
+      }
+      return newSelectedEqs;
+    });
+  };
+
+  // Use useEffect to call the onSelectedEqsChange callback whenever selectedEqs changes
+  useEffect(() => {
+    onSelectedEqsChange(selectedEqs);
+  }, [selectedEqs, onSelectedEqsChange]);
+
+  return (
+    <>
+      {companiesEqs.map((eq) => {
+        const totalPrice = eq.price * eq.quantity;
+
+        return (
+          <Box
+            width={"100%"}
+            key={eq.id}
+            p={4}
+            alignItems={"center"}
+            mb={4}
+            bg="gray.100"
+            borderRadius="md"
+            justifyContent="start"
+          >
+            <Flex
+              direction={"row"}
+              width={"100%"}
+              alignItems={"center"}
+              justifyContent="space-between"
+            >
+              <Flex direction={"row"} alignItems={"center"} width="100%">
+                <Checkbox
+                  isChecked={selectedEqs.has(eq.id)}
+                  onChange={() => handleCheckboxChange(eq.id)}
+                  mr={4}
+                />
+                <Image
+                  objectFit={"cover"}
+                  src={`data:image/jpeg;base64,${eq.returnedImg}`}
+                  width="150px"
+                  height="100px"
+                  borderRadius="5px"
+                  mr={4}
+                />
+                <Flex direction={"column"}>
+                  <Heading size="lg">{eq.name}</Heading>
+                  <Text fontWeight={"light"}>{eq.description}</Text>
+                </Flex>
+              </Flex>
+
+              <Flex alignItems={"center"}>
+                <Box fontWeight={"bold"} width="100%" fontSize="20px" mr={4}>
+                  <Text fontSize="sm">
+                    À partir de
+                    <Text fontSize={"22px"} fontWeight={"bold"}>
+                      {totalPrice} DH
+                    </Text>
+                  </Text>
+                  <NumberInput
+                    size="md"
+                    maxW={24}
+                    value={eq.quantity}
+                    defaultValue={1}
+                    onChange={(valueString) =>
+                      onQuantityChange(eq.id, parseInt(valueString) || 1)
+                    }
+                    min={1}
+                  >
+                    <NumberInputField background={"white"} />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </Box>
+              </Flex>
+            </Flex>
+          </Box>
+        );
+      })}
+    </>
+  );
+};
+
 interface DateRange {
   start: Date;
   end: Date;
 }
 export default function Marketplace() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isAddClose, setIsAddClose] = useState(false);
   const [isReservation, setIsReservation] = useState(false);
 
   const initialRef = React.useRef(null);
   const [bookings, setBookings] = useState([]);
   const finalRef = React.useRef(null);
+  const [allBookings, setAllBookings] = useState([]);
   const [name, setName] = useState("");
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
@@ -203,7 +328,7 @@ export default function Marketplace() {
   const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedAdId, setSelectedAdId] = useState("");
   const [companiesEqs, setCompaniesEqs] = useState([]);
-  const [selectedEqs, setSelectedEqs] = useState(0);
+  const [selectedEqs, setSelectedEqs] = useState<Set<string>>(new Set());
   useEffect(() => {
     if (searchValue === "") {
       fetchAds();
@@ -217,7 +342,13 @@ export default function Marketplace() {
   const handleFileChange = (e: any) => {
     setFile(e.target.files[0]);
   };
-
+  const handleQuantityChange = (id: string, newQuantity: number) => {
+    setCompaniesEqs((prevList: any) =>
+      prevList.map((eq: any) =>
+        eq.id === id ? { ...eq, quantity: newQuantity } : eq
+      )
+    );
+  };
   // Chakra Color Mode
   const [userType, setUserType] = useState("");
   useEffect(() => {
@@ -233,6 +364,7 @@ export default function Marketplace() {
   const fetchAds = async () => {
     try {
       let response;
+      let bookingsResp;
 
       if (localStorage.getItem("userType") === "COMPANY") {
         response = await fetch(
@@ -247,6 +379,18 @@ export default function Marketplace() {
         });
       }
 
+      bookingsResp = await fetch(`http://localhost:8080/api/company/bookings`, {
+        method: "GET",
+      });
+
+      if (bookingsResp.ok) {
+        const data = await bookingsResp.json();
+        setAllBookings(data);
+        console.log(data);
+      } else {
+        // Handle non-OK response
+        alert("Error fetching bookings");
+      }
       if (response.ok) {
         const data = await response.json();
         setAds(data);
@@ -331,6 +475,7 @@ export default function Marketplace() {
     serviceName: string
   ) => {
     setLoading(true); // Set loading to true before starting the fetch request
+    onClose();
 
     try {
       const response = await fetch(
@@ -342,17 +487,19 @@ export default function Marketplace() {
           },
           body: JSON.stringify({
             id: parseInt(clientId),
-            bookDate: new Date(),
-            endDate: new Date(),
+            bookDate: startDate || new Date(),
+            endDate: endDate || startDate,
             adId: adId,
             companyId: companyId,
             userId: parseInt(clientId),
-            serviceName: serviceName,
+            serviceName: "serviceName",
+            equipment: Array.from(selectedEqs),
           }),
         }
       );
 
       if (response.ok) {
+        setSteps(0);
         Swal.fire({
           title: "Success!",
           text: `Service ${serviceName} booked successfully`,
@@ -384,6 +531,7 @@ export default function Marketplace() {
         confirmButtonText: "OK",
       });
     } finally {
+      fetchAds();
       setLoading(false); // Set loading to false after the fetch request completes
     }
   };
@@ -404,19 +552,33 @@ export default function Marketplace() {
       );
 
       if (response.ok) {
-        // Handle success
         onClose();
-        alert("Service updated successfully");
+        Swal.fire({
+          title: "Success!",
+          text: "Service updated successfully",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
         fetchAds();
+        setEditableId("");
+        setName("");
+        setPrice("");
+        setDescription("");
       } else {
-        // Handle error
-        alert("Error updating service");
+        Swal.fire({
+          title: "Error",
+          text: "Error updating service",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
       console.error("Error updating service:", error);
     }
   };
-
+  const onCloseAdd = () => {
+    setIsAddOpen(false);
+  };
   const deleteAd = async (adId: string) => {
     try {
       const response = await fetch(
@@ -427,12 +589,21 @@ export default function Marketplace() {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        Swal.fire({
+          title: "Success!",
+          text: "Service deleted successfully",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+
         fetchAds();
-        console.log(data); // Log the fetched data
       } else {
-        // Handle non-OK response
-        alert("Error fetching ads");
+        Swal.fire({
+          title: "Error",
+          text: "Error deleting service",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
       console.error("Error fetching ads:", error);
@@ -461,11 +632,56 @@ export default function Marketplace() {
     }
   };
 
-  const disabledRanges: DateRange[] = [
-    { start: new Date(2024, 6, 10), end: new Date(2024, 6, 14) },
-    { start: new Date(2024, 6, 24), end: new Date(2024, 6, 29) },
-  ];
+  const disabledRanges: DateRange[] = allBookings.map((ad) => {
+    if (ad.adId === selectedAdId) {
+      return { start: ad.bookDate, end: ad.endDate };
+    } else {
+      return { start: new Date(), end: new Date() };
+    }
+  });
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("serviceName", name);
+    formData.append("price", price);
+    formData.append("description", description);
+    formData.append("img", file);
 
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/company/ad/${localStorage.getItem(
+          "clientId"
+        )}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      if (response.ok) {
+        onCloseAdd();
+        Swal.fire({
+          title: "Success!",
+          text: "Service added successfully",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+        setEditableId("");
+        setName("");
+        setPrice("");
+        setDescription("");
+        fetchAds();
+      } else {
+        // Handle error
+        alert("Error adding service");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+
+  const handleSelectedEqsChange = (newSelectedEqs: Set<string>) => {
+    setSelectedEqs(newSelectedEqs);
+  };
   const isDateDisabled = (date: Date) => {
     return disabledRanges.some(
       (range) => date >= range.start && date <= range.end
@@ -498,10 +714,63 @@ export default function Marketplace() {
           </Flex>
         </>
       )}
+      <Modal isOpen={isAddOpen} onClose={onCloseAdd}>
+        <ModalContent>
+          <ModalHeader>Ajouter un service</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <FormControl>
+              <FormLabel>Nom de service</FormLabel>
+              <Input
+                ref={initialRef}
+                placeholder="Nom de service"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                }}
+              />
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Prix</FormLabel>
+              <Input
+                placeholder="Prix"
+                value={price}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                }}
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Description</FormLabel>
+
+              <Textarea
+                placeholder="Description"
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                }}
+              />
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Image</FormLabel>
+              <input type="file" onChange={handleFileChange} />
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleSubmit}>
+              Ajouter
+            </Button>
+            <Button onClick={onCloseAdd}>Annuler</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent width={"900px"}>
+        <ModalContent maxWidth={"700px"} width="100%">
           {isReservation ? (
             <>
               {steps === 0 ? (
@@ -520,7 +789,12 @@ export default function Marketplace() {
                             isDateDisabled(date)
                           }
                           onChange={(e: any) => {
-                            console.log(e);
+                            if (e[0] && e[1]) {
+                              setStartDate(e[0]);
+                              setEndDate(e[1]);
+                            } else if (e[0]) {
+                              setStartDate(e[0]);
+                            }
                           }}
                         />
                       </Flex>
@@ -567,65 +841,11 @@ export default function Marketplace() {
                   <ModalHeader>Resevation</ModalHeader>
                   <ModalCloseButton />
                   <ModalBody pb={6}>
-                    {companiesEqs.map((eq: any) => (
-                      <Box
-                        width={"100%"}
-                        key={eq.id}
-                        p={4}
-                        alignItems={"center"}
-                        mb={4}
-                        bg="gray.200"
-                        borderRadius="md"
-                        justifyContent="start"
-                      >
-                        <Flex
-                          direction={"row"}
-                          width={"100%"}
-                          alignItems={"center"}
-                          justifyContent="space-between"
-                        >
-                          <Flex
-                            direction={"row"}
-                            alignItems={"center"}
-                            width="100%"
-                          >
-                            <Image
-                              objectFit={"cover"}
-                              src={`data:image/jpeg;base64,${eq.returnedImg}`}
-                              width="150px"
-                              height="100px"
-                              borderRadius="5px"
-                              mr={4}
-                            />
-                            <Flex direction={"column"}>
-                              <Heading size="lg">{eq.serviceName}</Heading>
-
-                              <Text fontWeight={"light"}>{eq.description}</Text>
-                            </Flex>
-                          </Flex>
-
-                          <Flex alignItems={"center"}>
-                            <Box
-                              fontWeight={"bold"}
-                              width="100%"
-                              fontSize="20px"
-                              mr={4}
-                            >
-                              <Text fontSize="sm">
-                                À partir de
-                                <Text fontSize={"22px"} fontWeight={"bold"}>
-                                  {eq.price} DH
-                                </Text>
-                              </Text>
-                              <Input
-                                type={"number"}
-                                backgroundColor={"white"}
-                              />
-                            </Box>
-                          </Flex>
-                        </Flex>
-                      </Box>
-                    ))}
+                    <EquipmentList
+                      companiesEqs={companiesEqs}
+                      onSelectedEqsChange={handleSelectedEqsChange}
+                      onQuantityChange={handleQuantityChange}
+                    />
                   </ModalBody>
                   <ModalFooter>
                     <Button
@@ -734,7 +954,20 @@ export default function Marketplace() {
                         price={ad.price}
                         image={ad.returnedImg}
                         download="#"
-                        onDelete={() => deleteAd(ad.id)}
+                        onDelete={() =>
+                          Swal.fire({
+                            title: "Are you sure?",
+                            text: "You won't be able to revert this!",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: "Yes, delete it!",
+                            cancelButtonText: "No, keep it",
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              deleteAd(ad.id);
+                            }
+                          })
+                        }
                         onUpdate={(e: any) => {
                           e.preventDefault();
                           handleUpdate(ad.id);
@@ -756,7 +989,6 @@ export default function Marketplace() {
                         onOpen();
                         setSelectedAdId(ad.id);
                         setSelectedCompany(ad.userId);
-                        // handleBooking(ad.id, ad.userId, ad.serviceName);
                       }}
                     />
                   ))}
@@ -765,7 +997,7 @@ export default function Marketplace() {
                   width={"290px"}
                   height={"100px"}
                   justifyContent="center"
-                  onClick={onOpen}
+                  onClick={() => setIsAddOpen(true)}
                   cursor="pointer"
                   style={{
                     borderRadius: "20px",

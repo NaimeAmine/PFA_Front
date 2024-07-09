@@ -150,7 +150,6 @@ export default function HeaderLinks(props: { secondary: boolean }) {
             <Text fontSize="md" fontWeight="600" color={textColor}>
               Notifications
             </Text>
-
           </Flex>
           <Flex flexDirection="column">
             {notifications.map((notification, index) => (
@@ -168,7 +167,6 @@ export default function HeaderLinks(props: { secondary: boolean }) {
           </Flex>
         </MenuList>
       </Menu>
-
 
       <Button
         variant="no-hover"
@@ -220,11 +218,14 @@ export default function HeaderLinks(props: { secondary: boolean }) {
               fontWeight="700"
               color={textColor}
             >
-              👋&nbsp; Hey, Adela
+              👋&nbsp; Hey,{" "}
+              {localStorage.getItem("username")
+                ? localStorage.getItem("username")
+                : "Admin"}
             </Text>
           </Flex>
           <Flex flexDirection="column" p="10px">
-            <MenuItem
+            {/* <MenuItem
               _hover={{ bg: "none" }}
               _focus={{ bg: "none" }}
               borderRadius="8px"
@@ -239,7 +240,7 @@ export default function HeaderLinks(props: { secondary: boolean }) {
               px="14px"
             >
               <Text fontSize="sm">Newsletter Settings</Text>
-            </MenuItem>
+            </MenuItem> */}
             <MenuItem
               _hover={{ bg: "none" }}
               _focus={{ bg: "none" }}
@@ -251,7 +252,7 @@ export default function HeaderLinks(props: { secondary: boolean }) {
                 window.location.href = "/auth/sign-in";
               }}
             >
-              <Text fontSize="sm">Log out</Text>
+              <Text fontSize="sm">Se déconnecter</Text>
             </MenuItem>
           </Flex>
         </MenuList>

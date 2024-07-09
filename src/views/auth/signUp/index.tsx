@@ -93,6 +93,7 @@ function SignUp() {
         console.log("Success:", data);
         localStorage.setItem("clientId", data.userId);
         localStorage.setItem("userType", data.role);
+        localStorage.setItem("username", data.username);
         localStorage.setItem("remember", "true");
         window.location.href = "/admin/services";
       })

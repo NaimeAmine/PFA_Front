@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 // Chakra imports
@@ -55,7 +54,8 @@ function SignIn() {
 
   useEffect(() => {
     document.title = "Se connecter - Horizon UI";
-    if (localStorage.getItem("clientId")) window.location.href = "/admin/services";
+    if (localStorage.getItem("clientId"))
+      window.location.href = "/admin/services";
   }, []);
 
   // Handle form submission
@@ -83,6 +83,7 @@ function SignIn() {
       const data = JSON.parse(responseText);
       localStorage.setItem("clientId", data.userId);
       localStorage.setItem("userType", data.role);
+      localStorage.setItem("username", data.username);
       localStorage.setItem("remember", remember.toString());
       window.location.href = "/admin/services";
       console.log("Login successful:", data);
@@ -206,7 +207,7 @@ function SignIn() {
                     Garder ma session ouverte
                   </FormLabel>
                 </FormControl>
-                <NavLink to="/auth/forgot-password">
+                {/* <NavLink to="/auth/forgot-password">
                   <Text
                     color={textColorBrand}
                     fontSize="sm"
@@ -215,7 +216,7 @@ function SignIn() {
                   >
                     Mot de passe oublié ?
                   </Text>
-                </NavLink>
+                </NavLink> */}
               </Flex>
               <Button
                 fontSize="sm"
